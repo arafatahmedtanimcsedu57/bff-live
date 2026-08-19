@@ -24,6 +24,7 @@ export class BffLiveStack extends cdk.Stack {
       handler: 'handler.handler',
       code: lambda.Code.fromAsset('lambda'),
       environment: { TABLE_NAME: table.tableName },
+      tracing: lambda.Tracing.ACTIVE,
     });
     table.grantReadData(getOrdersFn);
 
@@ -52,6 +53,10 @@ export class BffLiveStack extends cdk.Stack {
       defaultMethodOptions: {
         authorizer: apiAuthorizer,
         authorizationType: apigateway.AuthorizationType.COGNITO,   // every route now requires a valid token
+      },
+      deployOptions: {
+        stageName: 'v1',
+        tracingEnabled: true,
       },
     });
 
@@ -87,6 +92,7 @@ export class BffLiveStack extends cdk.Stack {
       handler: 'stream.handler',
       code: lambda.Code.fromAsset('lambda'),
       environment: { APPSYNC_URL: graph.graphqlUrl },
+      tracing: lambda.Tracing.ACTIVE,
     });
     streamFn.addEventSource(new DynamoEventSource(table, {
       startingPosition: lambda.StartingPosition.LATEST,
